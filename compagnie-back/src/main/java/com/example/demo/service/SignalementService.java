@@ -32,6 +32,34 @@ public class SignalementService {
     @Autowired
     private EntrepriseRepository entrepriseRepository;
 
+
+    /**
+     * Créer un nouveau signalement
+     */
+    @Transactional
+    public SignalementResponse creerSignalement(SignalementRequest request) {
+        // Créer le signalement
+        Signalement signalement = new Signalement();
+        signalement.setIdUtilisateur(request.getIdUtilisateur());
+        signalement.setLatitude(request.getLatitude());
+        signalement.setLongitude(request.getLongitude());
+        signalement.setSource(request.getSource() != null ? request.getSource() : "WEB");
+        signalement.setDateCreation(LocalDateTime.now());
+        signalementRepository.save(signalement);
+
+        // Assigner le statut NOUVEAU par défaut
+        StatutSignalement statutNouveau = statutSignalementRepository.findByCode("NOUVEAU")
+                .orElseThrow(() -> new RuntimeException("Statut NOUVEAU non trouvé"));
+
+        SignalementStatut statut = new SignalementStatut();
+        statut.setIdSignalement(signalement.getIdSignalement());
+        statut.setIdStatut(statutNouveau.getIdStatut());
+        statut.setDateDebut(LocalDateTime.now());
+        signalementStatutRepository.save(statut);
+
+        return buildSignalementResponse(signalement);
+    }
+
     /**
      * Récupérer les signalements d'un utilisateur
      */
