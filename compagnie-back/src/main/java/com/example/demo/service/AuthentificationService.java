@@ -194,5 +194,28 @@ public class AuthentificationService {
         return response;
     }
 
+    /**
+     * Débloquer un compte (pour admin)
+     */
+    @Transactional
+    public void debloquerCompte(UUID idUtilisateur) {
+        // Terminer l'état actuel
+        UtilisateurEtat etatActuel = utilisateurEtatRepository
+                .findByIdUtilisateurAndDateFinIsNull(idUtilisateur)
+                .orElseThrow(() -> new RuntimeException("État actuel non trouvé"));
 
+        etatActuel.setDateFin(LocalDateTime.now());
+        utilisateurEtatRepository.save(etatActuel);
+
+        // Créer un nouvel état ACTIF
+        EtatCompte etatActif = etatCompteRepository.findByCode("ACTIF")
+                .orElseThrow(() -> new RuntimeException("État ACTIF non trouvé"));
+
+        UtilisateurEtat nouvelEtat = new UtilisateurEtat();
+        nouvelEtat.setIdUtilisateur(idUtilisateur);
+        nouvelEtat.setIdEtat(etatActif.getIdEtat());
+        nouvelEtat.setRaison("Compte débloqué par un administrateur");
+        nouvelEtat.setDateDebut(LocalDateTime.now());
+        utilisateurEtatRepository.save(nouvelEtat);
+    }
 }
