@@ -44,6 +44,63 @@ public class AuthentificationService {
     private TentativeConnexionRepository tentativeConnexionRepository;
 
 
+    /**
+     * Inscription d'un nouvel utilisateur
+     */
+    @Transactional
+    public AuthResponse inscrire(InscriptionRequest request) {
+        // Vérifier si l'email existe déjà
+        if (utilisateurRepository.existsByEmail(request.getEmail())) {
+            return new AuthResponse(false, "Cet email est déjà utilisé");
+        }
+
+        // Créer l'utilisateur
+        Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setEmail(request.getEmail());
+        utilisateur.setSourceAuth("LOCAL");
+        utilisateur.setDateCreation(LocalDateTime.now());
+        utilisateurRepository.save(utilisateur);
+
+        // Créer les informations utilisateur
+        UtilisateurInfo info = new UtilisateurInfo();
+        info.setIdUtilisateur(utilisateur.getIdUtilisateur());
+        info.setNom(request.getNom());
+        info.setPrenom(request.getPrenom());
+        info.setDateDebut(LocalDateTime.now());
+        utilisateurInfoRepository.save(info);
+
+        // Créer le mot de passe hashé
+        UtilisateurPassword password = new UtilisateurPassword();
+        password.setIdUtilisateur(utilisateur.getIdUtilisateur());
+        password.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        password.setDateDebut(LocalDateTime.now());
+        utilisateurPasswordRepository.save(password);
+
+        // Assigner le rôle USER par défaut
+        Role roleUser = roleRepository.findByCode("USER")
+                .orElseThrow(() -> new RuntimeException("Rôle USER non trouvé"));
+
+        UtilisateurRole utilisateurRole = new UtilisateurRole();
+        utilisateurRole.setIdUtilisateur(utilisateur.getIdUtilisateur());
+        utilisateurRole.setIdRole(roleUser.getIdRole());
+        utilisateurRole.setDateDebut(LocalDateTime.now());
+        utilisateurRoleRepository.save(utilisateurRole);
+
+        // Définir l'état ACTIF
+        EtatCompte etatActif = etatCompteRepository.findByCode("ACTIF")
+                .orElseThrow(() -> new RuntimeException("État ACTIF non trouvé"));
+
+        UtilisateurEtat utilisateurEtat = new UtilisateurEtat();
+        utilisateurEtat.setIdUtilisateur(utilisateur.getIdUtilisateur());
+        utilisateurEtat.setIdEtat(etatActif.getIdEtat());
+        utilisateurEtat.setDateDebut(LocalDateTime.now());
+        utilisateurEtatRepository.save(utilisateurEtat);
+
+        // Créer la réponse
+        UtilisateurResponse userResponse = buildUtilisateurResponse(utilisateur);
+        return new AuthResponse(true, "Inscription réussie", userResponse);
+    }
+
         @Transactional
     public AuthResponse connecter(LoginRequest request) {
         // Rechercher l'utilisateur par email
