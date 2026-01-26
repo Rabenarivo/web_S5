@@ -44,7 +44,21 @@ public class AuthentificationController {
         }
     }
 
-    
+    /**
+     * Endpoint pour débloquer un compte (admin)
+     * POST /api/auth/unblock/{userId}
+     */
+    @PostMapping("/unblock/{userId}")
+    public ResponseEntity<AuthResponse> debloquerCompte(@PathVariable("userId") UUID userId) {
+        try {
+            authentificationService.debloquerCompte(userId);
+            AuthResponse response = new AuthResponse(true, "Compte débloqué avec succès");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            AuthResponse errorResponse = new AuthResponse(false, "Erreur lors du déblocage: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 
 
 
