@@ -218,4 +218,33 @@ public class AuthentificationService {
         nouvelEtat.setDateDebut(LocalDateTime.now());
         utilisateurEtatRepository.save(nouvelEtat);
     }
+
+    /**
+     * Récupérer la liste des utilisateurs bloqués
+     */
+    public List<UtilisateurResponse> getUtilisateursBloqués() {
+        // Récupérer l'état BLOQUE
+        EtatCompte etatBloque = etatCompteRepository.findByCode("BLOQUE")
+                .orElseThrow(() -> new RuntimeException("État BLOQUE non trouvé"));
+
+        // Trouver tous les utilisateurs avec l'état BLOQUE actif
+        List<UtilisateurEtat> utilisateursBloqués = utilisateurEtatRepository
+                .findAll()
+                .stream()
+                .filter(ue -> ue.getIdEtat().equals(etatBloque.getIdEtat()) && ue.getDateFin() == null)
+                .toList();
+
+        // Construire les réponses
+        return utilisateursBloqués.stream()
+                .map(ue -> {
+                    Utilisateur utilisateur = utilisateurRepository.findById(ue.getIdUtilisateur())
+                            .orElse(null);
+                    if (utilisateur != null) {
+                        return buildUtilisateurResponse(utilisateur);
+                    }
+                    return null;
+                })
+                .filter(u -> u != null)
+                .collect(Collectors.toList());
+    }
 }
