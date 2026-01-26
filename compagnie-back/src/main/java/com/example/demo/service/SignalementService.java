@@ -61,6 +61,16 @@ public class SignalementService {
     }
 
     /**
+     * Récupérer tous les signalements
+     */
+    public List<SignalementResponse> getAllSignalements() {
+        List<Signalement> signalements = signalementRepository.findAllByOrderByDateCreationDesc();
+        return signalements.stream()
+                .map(this::buildSignalementResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Récupérer les signalements d'un utilisateur
      */
     public List<SignalementResponse> getSignalementsByUtilisateur(UUID idUtilisateur) {
