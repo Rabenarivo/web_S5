@@ -21,6 +21,29 @@ public class SignalementController {
     @Autowired
     private SignalementService signalementService;
 
+    /**
+     * Créer un nouveau signalement
+     * POST /api/signalements
+     */
+    @PostMapping
+    public ResponseEntity<SignalementResponse> creerSignalement(@Valid @RequestBody SignalementRequest request) {
+        try {
+            SignalementResponse response = signalementService.creerSignalement(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la création du signalement: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Récupérer tous les signalements
+     * GET /api/signalements
+     */
+    @GetMapping
+    public ResponseEntity<List<SignalementResponse>> getAllSignalements() {
+        List<SignalementResponse> signalements = signalementService.getAllSignalements();
+        return ResponseEntity.ok(signalements);
+    }
    
     /**
      * Récupérer un signalement par ID
