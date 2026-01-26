@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.DTO.AuthResponse;
 import com.example.demo.DTO.LoginRequest;
+import com.example.demo.DTO.UtilisateurResponse;
 // import com.example.demo.DTO.AuthResponse;
 // import com.example.demo.DTO.InscriptionRequest;
 // import com.example.demo.DTO.LoginRequest;
@@ -57,6 +58,20 @@ public class AuthentificationController {
         } catch (Exception e) {
             AuthResponse errorResponse = new AuthResponse(false, "Erreur lors du déblocage: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    /**
+     * Endpoint pour récupérer la liste des utilisateurs bloqués (admin)
+     * GET /api/auth/blocked-users
+     */
+    @GetMapping("/blocked-users")
+    public ResponseEntity<List<UtilisateurResponse>> getUtilisateursBloqués() {
+        try {
+            List<UtilisateurResponse> utilisateursBloqués = authentificationService.getUtilisateursBloqués();
+            return ResponseEntity.ok(utilisateursBloqués);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
