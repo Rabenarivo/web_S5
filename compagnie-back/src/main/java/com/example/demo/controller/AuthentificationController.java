@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.DTO.AuthResponse;
+import com.example.demo.DTO.InscriptionRequest;
 import com.example.demo.DTO.LoginRequest;
 import com.example.demo.DTO.UtilisateurResponse;
 // import com.example.demo.DTO.AuthResponse;
@@ -24,6 +25,26 @@ public class AuthentificationController {
 
     @Autowired
     private AuthentificationService authentificationService;
+
+    /**
+     * Endpoint d'inscription
+     * POST /api/auth/register
+     */
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> inscrire(@Valid @RequestBody InscriptionRequest request) {
+        try {
+            AuthResponse response = authentificationService.inscrire(request);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (Exception e) {
+            AuthResponse errorResponse = new AuthResponse(false, "Erreur lors de l'inscription: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 
         /**
      * Endpoint de connexion
