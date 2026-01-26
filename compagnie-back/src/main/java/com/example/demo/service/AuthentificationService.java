@@ -194,5 +194,57 @@ public class AuthentificationService {
         return response;
     }
 
+    /**
+     * Débloquer un compte (pour admin)
+     */
+    @Transactional
+    public void debloquerCompte(UUID idUtilisateur) {
+        // Terminer l'état actuel
+        UtilisateurEtat etatActuel = utilisateurEtatRepository
+                .findByIdUtilisateurAndDateFinIsNull(idUtilisateur)
+                .orElseThrow(() -> new RuntimeException("État actuel non trouvé"));
 
+        etatActuel.setDateFin(LocalDateTime.now());
+        utilisateurEtatRepository.save(etatActuel);
+
+        // Créer un nouvel état ACTIF
+        EtatCompte etatActif = etatCompteRepository.findByCode("ACTIF")
+                .orElseThrow(() -> new RuntimeException("État ACTIF non trouvé"));
+
+        UtilisateurEtat nouvelEtat = new UtilisateurEtat();
+        nouvelEtat.setIdUtilisateur(idUtilisateur);
+        nouvelEtat.setIdEtat(etatActif.getIdEtat());
+        nouvelEtat.setRaison("Compte débloqué par un administrateur");
+        nouvelEtat.setDateDebut(LocalDateTime.now());
+        utilisateurEtatRepository.save(nouvelEtat);
+    }
+
+    /**
+     * Récupérer la liste des utilisateurs bloqués
+     */
+    public List<UtilisateurResponse> getUtilisateursBloqués() {
+        // Récupérer l'état BLOQUE
+        EtatCompte etatBloque = etatCompteRepository.findByCode("BLOQUE")
+                .orElseThrow(() -> new RuntimeException("État BLOQUE non trouvé"));
+
+        // Trouver tous les utilisateurs avec l'état BLOQUE actif
+        List<UtilisateurEtat> utilisateursBloqués = utilisateurEtatRepository
+                .findAll()
+                .stream()
+                .filter(ue -> ue.getIdEtat().equals(etatBloque.getIdEtat()) && ue.getDateFin() == null)
+                .toList();
+
+        // Construire les réponses
+        return utilisateursBloqués.stream()
+                .map(ue -> {
+                    Utilisateur utilisateur = utilisateurRepository.findById(ue.getIdUtilisateur())
+                            .orElse(null);
+                    if (utilisateur != null) {
+                        return buildUtilisateurResponse(utilisateur);
+                    }
+                    return null;
+                })
+                .filter(u -> u != null)
+                .collect(Collectors.toList());
+    }
 }
