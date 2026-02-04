@@ -1,0 +1,29 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.app-header {
+  background: #282c34;
+  color: white;
+  padding: 2rem;
+}
+
+.app-main {
+  flex: 1;
+  padding: 2rem;
+}
+
+button {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.app-footer {
+  background: #f1f1f1;
+  padding: 1rem;
+}
