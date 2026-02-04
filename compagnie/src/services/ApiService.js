@@ -142,8 +142,22 @@ class ApiService {
     return this.handleResponse(response);
   }
 
-}
 
+
+    /**
+   * Inscription d'un nouvel utilisateur
+   * @param {Object} data - { email, password, nom, prenom }
+   */
+  async register(data) {
+    const response = await fetch(`${this.baseUrl}/api/auth/register`, {
+      method: 'POST',
+      headers: this.getHeaders(false),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+}
 
 
 
