@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/ApiService';
+import AssignSignalementModal from '../components/AssignSignalementModal';
 
 const AdministrationUsers = () => {
   const navigate = useNavigate();
