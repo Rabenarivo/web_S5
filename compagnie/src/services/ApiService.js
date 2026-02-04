@@ -65,9 +65,6 @@ class ApiService {
 
   // ==================== AUTHENTIFICATION ====================
 
-  /**
-   * Teste la connectivité de l'API
-   */
   async ping() {
     const response = await fetch(`${this.baseUrl}/api/auth/ping`);
     return response.text();
@@ -94,8 +91,61 @@ class ApiService {
     return data;
   }
 
+    async getUtilisateursBloqués() {
+    const response = await fetch(`${this.baseUrl}/api/auth/blocked-users`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // ==================== SIGNALEMENTS ====================
+  async getAllSignalements() {
+    const response = await fetch(`${this.baseUrl}/api/signalements`, {
+      headers: this.getHeaders(false),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Récupère un signalement par son ID
+   * @param {string} id - ID du signalement
+   */
+    async getSignalementById(id) {
+      const response = await fetch(`${this.baseUrl}/api/signalements/${id}`, {
+        headers: this.getHeaders(),
+      });
+      return this.handleResponse(response);
+    }
+
+    async deleteSignalement(id) {
+    const response = await fetch(`${this.baseUrl}/api/signalements/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+
+    async updateSignalement(data) {
+    const response = await fetch(`${this.baseUrl}/api/signalements`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+    async getEntreprises() {
+    const response = await fetch(`${this.baseUrl}/api/entreprises`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
 
 }
+
+
+
 
 // Instance singleton du service
 const apiService = new ApiService();
