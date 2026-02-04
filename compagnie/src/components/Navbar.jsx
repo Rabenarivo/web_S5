@@ -40,8 +40,13 @@ const Navbar = () => {
               <Link to="/" className={`nav-link ${isActive('/')}`}>
                 Accueil
               </Link>
+              
             </li>
-
+            <li className="nav-item">
+              <Link to="/carte" className={`nav-link ${isActive('/carte')}`}>
+                Carte
+              </Link>
+            </li>
             {isAuthenticated ? (
               (() => {
                 const user = apiService.getUser();
