@@ -72,6 +72,32 @@ class ApiService {
 
 
 
+   /**
+   * Connexion d'un utilisateur
+   * @param {Object} credentials - { email, password }
+   */
+  async login(credentials) {
+    const response = await fetch(`${this.baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: this.getHeaders(false),
+      body: JSON.stringify(credentials),
+    });
+    const data = await this.handleResponse(response);
+    
+    if (data.success && data.utilisateur) {
+      this.setUser(data.utilisateur);
+    }
+    
+    return data;
+  }
+
+  /**
+   * Déconnexion de l'utilisateur
+   */
+  logout() {
+    this.removeUser();
+  }
+
   /**
    * Connexion d'un utilisateur
    * @param {Object} credentials - { email, password }
@@ -120,6 +146,29 @@ class ApiService {
     async deleteSignalement(id) {
     const response = await fetch(`${this.baseUrl}/api/signalements/${id}`, {
       method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Récupère les signalements par statut
+   * @param {string} statut - OUVERT, EN_COURS, RESOLU, FERME
+   */
+  async getSignalementsByStatut(statut) {
+    const response = await fetch(`${this.baseUrl}/api/signalements/statut/${statut}`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+    /**
+   * Récupère les signalements par zone géographique
+   * @param {Object} bounds - { minLat, maxLat, minLng, maxLng }
+   */
+  async getSignalementsByZone(bounds) {
+    const params = new URLSearchParams(bounds);
+    const response = await fetch(`${this.baseUrl}/api/signalements/zone?${params}`, {
       headers: this.getHeaders(),
     });
     return this.handleResponse(response);
