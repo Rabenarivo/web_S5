@@ -15,4 +15,6 @@ public interface SignalementRepository extends JpaRepository<Signalement, UUID> 
     List<Signalement> findBySource(String source);
     
     List<Signalement> findAllByOrderByDateCreationDesc();
+
+     List<Signalement> findByIdUtilisateurAndLatitudeAndLongitude(UUID idUtilisateur, Double latitude, Double longitude);
 }
