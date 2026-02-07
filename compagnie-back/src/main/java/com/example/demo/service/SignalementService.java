@@ -4,8 +4,10 @@ import com.example.demo.DTO.SignalementRequest;
 import com.example.demo.DTO.SignalementResponse;
 import com.example.demo.DTO.UpdateSignalementRequest;
 import com.example.demo.entite.*;
+import com.example.demo.event.SignalementEvent;
 import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,9 @@ public class SignalementService {
 
     @Autowired
     private EntrepriseRepository entrepriseRepository;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
 
     /**
@@ -87,6 +92,140 @@ public class SignalementService {
         Signalement signalement = signalementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Signalement non trouvé"));
         return buildSignalementResponse(signalement);
+    }
+
+    /**
+     * Mettre à jour un signalement (statut, détails)
+     */
+    @Transactional
+    public SignalementResponse updateSignalement(UpdateSignalementRequest request) {
+        Signalement signalement = signalementRepository.findById(request.getIdSignalement())
+                .orElseThrow(() -> new RuntimeException("Signalement non trouvé"));
+
+        // Mettre à jour le statut si fourni
+        if (request.getStatut() != null) {
+            updateStatut(signalement.getIdSignalement(), request.getStatut());
+        }
+
+        // Mettre à jour les détails si fournis
+        if (request.getSurfaceM2() != null || request.getBudget() != null || request.getIdEntreprise() != null) {
+            updateDetails(signalement.getIdSignalement(), request);
+        }
+
+        // Publier événement pour synchronisation Firestore
+        eventPublisher.publishEvent(new SignalementEvent(this, signalement, SignalementEvent.EventType.UPDATED));
+
+        return buildSignalementResponse(signalement);
+    }
+
+    /**
+     * Mettre à jour le statut d'un signalement
+     */
+    @Transactional
+    private void updateStatut(UUID idSignalement, String codeStatut) {
+        // Terminer le statut actuel
+        SignalementStatut statutActuel = signalementStatutRepository
+                .findByIdSignalementAndDateFinIsNull(idSignalement)
+                .orElse(null);
+
+        if (statutActuel != null) {
+            statutActuel.setDateFin(LocalDateTime.now());
+            signalementStatutRepository.save(statutActuel);
+        }
+
+        // Créer le nouveau statut
+        StatutSignalement nouveauStatut = statutSignalementRepository.findByCode(codeStatut)
+                .orElseThrow(() -> new RuntimeException("Statut " + codeStatut + " non trouvé"));
+
+        SignalementStatut statut = new SignalementStatut();
+        statut.setIdSignalement(idSignalement);
+        statut.setIdStatut(nouveauStatut.getIdStatut());
+        statut.setDateDebut(LocalDateTime.now());
+        signalementStatutRepository.save(statut);
+    }
+
+    /**
+     * Mettre à jour les détails d'un signalement
+     */
+    @Transactional
+    private void updateDetails(UUID idSignalement, UpdateSignalementRequest request) {
+        // Terminer le détail actuel
+        SignalementDetail detailActuel = signalementDetailRepository
+                .findByIdSignalementAndDateFinIsNull(idSignalement)
+                .orElse(null);
+
+        if (detailActuel != null) {
+            detailActuel.setDateFin(LocalDateTime.now());
+            signalementDetailRepository.save(detailActuel);
+        }
+
+        // Créer le nouveau détail
+        SignalementDetail detail = new SignalementDetail();
+        detail.setIdSignalement(idSignalement);
+        detail.setSurfaceM2(request.getSurfaceM2());
+        detail.setBudget(request.getBudget());
+        detail.setIdEntreprise(request.getIdEntreprise());
+        detail.setDateDebut(LocalDateTime.now());
+        signalementDetailRepository.save(detail);
+    }
+
+    /**
+     * Construire la réponse signalement
+     */
+    private SignalementResponse buildSignalementResponse(Signalement signalement) {
+        SignalementResponse response = new SignalementResponse();
+        response.setIdSignalement(signalement.getIdSignalement());
+        response.setIdUtilisateur(signalement.getIdUtilisateur());
+        response.setLatitude(signalement.getLatitude());
+        response.setLongitude(signalement.getLongitude());
+        response.setSource(signalement.getSource());
+        response.setDateCreation(signalement.getDateCreation());
+
+        // Récupérer le statut actuel
+        SignalementStatut statutActuel = signalementStatutRepository
+                .findByIdSignalementAndDateFinIsNull(signalement.getIdSignalement())
+                .orElse(null);
+
+        if (statutActuel != null) {
+            StatutSignalement statut = statutSignalementRepository.findById(statutActuel.getIdStatut()).orElse(null);
+            if (statut != null) {
+                response.setStatut(statut.getCode());
+            }
+        }
+
+        // Récupérer les détails actuels
+        SignalementDetail detailActuel = signalementDetailRepository
+                .findByIdSignalementAndDateFinIsNull(signalement.getIdSignalement())
+                .orElse(null);
+
+        if (detailActuel != null) {
+            response.setSurfaceM2(detailActuel.getSurfaceM2());
+            response.setBudget(detailActuel.getBudget());
+
+            if (detailActuel.getIdEntreprise() != null) {
+                Entreprise entreprise = entrepriseRepository.findById(detailActuel.getIdEntreprise()).orElse(null);
+                if (entreprise != null) {
+                    response.setEntreprise(entreprise.getNom());
+                }
+            }
+        }
+
+        return response;
+    }
+
+    /**
+     * Supprimer un signalement (soft delete via statut)
+     */
+    @Transactional
+    public void deleteSignalement(UUID idSignalement) {
+        Signalement signalement = signalementRepository.findById(idSignalement)
+                .orElseThrow(() -> new RuntimeException("Signalement non trouvé"));
+        
+        // Marquer comme TERMINE ou implémenter une vraie suppression si nécessaire
+        updateStatut(idSignalement, "TERMINE");
+
+        // Publier événement pour synchronisation Firestore
+        eventPublisher.publishEvent(new SignalementEvent(this, signalement, SignalementEvent.EventType.DELETED));
     }
 
 }

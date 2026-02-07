@@ -31,6 +31,11 @@ public class Utilisateur {
     @Column(name = "source_auth", nullable = false, length = 20)
     private String sourceAuth; // LOCAL | FIREBASE
 
+    
+    @Column(name = "firebase_uid", length = 128)
+    private String firebaseUid; // UID Firebase pour les utilisateurs mobiles
+
+
     @Column(name = "date_creation", nullable = false)
     private LocalDateTime dateCreation;
 
