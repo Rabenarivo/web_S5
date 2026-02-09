@@ -1,0 +1,7 @@
+{
+  "name": "compagnie_mobile_temp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
