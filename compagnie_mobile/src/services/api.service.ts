@@ -1,0 +1,42 @@
+import axios, { AxiosInstance } from 'axios';
+import type { RegisterRequest, LoginRequest, AuthResponse } from '../types/models';
+
+class ApiService {
+  private api: AxiosInstance;
+  private baseURL: string;
+
+  constructor() {
+    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+    
+    this.api = axios.create({
+      baseURL: this.baseURL,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    this.api.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+  }
+
+
+
+  async login(data: LoginRequest): Promise<AuthResponse> {
+    const response = await this.api.post<AuthResponse>('/auth/connexion', data);
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+    }
+    return response.data;
+  }
+
+}
+
+export default new ApiService();
