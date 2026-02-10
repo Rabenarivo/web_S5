@@ -60,6 +60,28 @@ class ApiService {
     const response = await this.api.get('/signalement');
     return response.data;
   }
+    async createSignalement(data: any): Promise<any> {
+    const response = await this.api.post('/signalement', data);
+    return response.data;
+  }
+
+  async updateSignalement(id: string, data: any): Promise<any> {
+    const response = await this.api.put(`/signalement/${id}`, data);
+    return response.data;
+  }
+
+  async deleteSignalement(id: string): Promise<void> {
+    await this.api.delete(`/signalement/${id}`);
+  }
+
+    isAuthenticated(): boolean {
+    return !!localStorage.getItem('authToken');
+  }
+
+  // Helper pour obtenir le token
+  getToken(): string | null {
+    return localStorage.getItem('authToken');
+  }
 
 
 
