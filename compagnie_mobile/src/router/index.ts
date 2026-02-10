@@ -16,6 +16,18 @@ const routes: Array<RouteRecordRaw> = [
     path: '/login',
     name: 'Login',
     component: () => import('../views/LoginPage.vue')
+  },
+  {
+    path: '/signalements',
+    name: 'Signalements',
+    component: () => import('../views/SignalementsPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/signalements/add',
+    name: 'AddSignalement',
+    component: () => import('../views/AddSignalementPage.vue'),
+    meta: { requiresAuth: true }
   }
  
 ]
