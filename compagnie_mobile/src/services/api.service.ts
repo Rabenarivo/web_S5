@@ -27,6 +27,13 @@ class ApiService {
     );
   }
 
+    async register(data: RegisterRequest): Promise<AuthResponse> {
+    const response = await this.api.post<AuthResponse>('/auth/inscription', data);
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+    }
+    return response.data;
+  }
 
 
   async login(data: LoginRequest): Promise<AuthResponse> {
@@ -44,7 +51,7 @@ class ApiService {
   }
 
 
-  
+
 }
 
 export default new ApiService();
