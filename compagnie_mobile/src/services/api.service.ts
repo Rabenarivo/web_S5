@@ -37,6 +37,14 @@ class ApiService {
     return response.data;
   }
 
+
+    async getSignalements(): Promise<any[]> {
+    const response = await this.api.get('/signalement');
+    return response.data;
+  }
+
+
+  
 }
 
 export default new ApiService();
