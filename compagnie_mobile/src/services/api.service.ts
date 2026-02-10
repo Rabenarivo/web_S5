@@ -27,6 +27,24 @@ class ApiService {
     );
   }
 
+    async register(data: RegisterRequest): Promise<AuthResponse> {
+    const response = await this.api.post<AuthResponse>('/auth/inscription', data);
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+    }
+    return response.data;
+  }
+
+    // Utilisateur
+  async getCurrentUser(): Promise<AuthResponse> {
+    const response = await this.api.get<AuthResponse>('/utilisateur/me');
+    return response.data;
+  }
+
+  async updateUserInfo(nom: string, prenom: string): Promise<any> {
+    const response = await this.api.put('/utilisateur/info', { nom, prenom });
+    return response.data;
+  }
 
 
   async login(data: LoginRequest): Promise<AuthResponse> {
@@ -44,7 +62,7 @@ class ApiService {
   }
 
 
-  
+
 }
 
 export default new ApiService();

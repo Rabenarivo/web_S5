@@ -27,8 +27,27 @@ const routes: Array<RouteRecordRaw> = [
     path: '/signalements/add',
     name: 'AddSignalement',
     component: () => import('../views/AddSignalementPage.vue'),
+
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/RegisterPage.vue')
+  },
+
+  {
+    path: '/recapitulation',
+    name: 'Recapitulation',
+    component: () => import('../views/RecapitulationPage.vue')
+    // Accessible sans authentification (visiteurs)
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('../views/ProfilePage.vue'),
     meta: { requiresAuth: true }
   }
+
  
 ]
 
