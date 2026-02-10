@@ -2,7 +2,16 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 
 const routes: Array<RouteRecordRaw> = [
-  
+  {
+    path: '/',
+    redirect: '/carte'
+  },
+  {
+    path: '/carte',
+    name: 'Carte',
+    component: () => import('../views/CartePage.vue')
+    // Accessible sans authentification (visiteurs)
+  },
   {
     path: '/login',
     name: 'Login',
